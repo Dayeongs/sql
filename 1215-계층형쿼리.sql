@@ -40,3 +40,40 @@ SELECT LEVEL,
 FROM EMPLOYEES
 START WITH EMPLOYEE_ID = 206    -- 206번 직원이 시작지점이다.
 CONNECT BY PRIOR MANAGER_ID = EMPLOYEE_ID;
+
+-- 연속된 숫자를 만들기
+select level
+from dual
+connect by level <= 10;
+
+-- 01월 ~ 12월까지 연속된 숫자 만들기
+select lpad(level, 2, '0') month
+from dual
+connect by level <= 12;
+
+-- 특정 기간 사이의 날짜 생성하기
+select to_date('2023-12-01') + level - 1
+from dual
+connect by level <= to_date('2023-12-31') - to_date('2023-12-01') + 2;
+
+-- 2003년에 입사한 직원들의 월별 입사자 숫자를 조회하기
+SELECT TO_CHAR(HIRE_DATE, 'MM'), COUNT(*)
+FROM EMPLOYEES
+WHERE HIRE_DATE >= '2003/01/01' AND HIRE_DATE < '2004/01/01'
+-- WHERE TO_CHAR(HIRE_DATE, 'YYYY') = '2003'
+GROUP BY TO_CHAR(HIRE_DATE, 'MM');
+
+SELECT A.MONTH, NVL(B.CNT, 0) CNT
+FROM (SELECT LPAD(LEVEL, 2, '0') MONTH
+      FROM DUAL
+      CONNECT BY LEVEL <= 12) A, 
+     (SELECT TO_CHAR(HIRE_DATE, 'MM') MONTH, COUNT(*) CNT
+      FROM EMPLOYEES
+      WHERE TO_CHAR(HIRE_DATE, 'YYYY') = '2003'
+      GROUP BY TO_CHAR(HIRE_DATE, 'MM')) B
+WHERE A.MONTH = B.MONTH(+)
+ORDER BY A.MONTH ASC;
+
+
+
+
